@@ -1,20 +1,17 @@
-# Playwright base image with all deps
+# Playwright base image with Chromium + deps
 FROM mcr.microsoft.com/playwright:v1.40.0-focal
 
-# Set working directory
 WORKDIR /app
 
-# Copy ONLY package.json first (for caching)
+# Install deps first for cache
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install --omit=dev
 
-# Copy the rest of the project
+# Copy rest of project
 COPY . .
 
-# Expose port 3000 for Railway
+# Expose a default port (Koyeb will override)
 EXPOSE 3000
 
-# Start the server
+# Start server
 CMD ["node", "index.js"]

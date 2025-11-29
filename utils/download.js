@@ -1,2 +1,11 @@
-module.exports = { downloadFile: async (url) => { throw new Error('not implemented yet'); } };
+const axios = require("axios");
 
+async function downloadFile(url) {
+  const response = await axios.get(url, {
+    responseType: "arraybuffer",
+  });
+
+  return Buffer.from(response.data);
+}
+
+module.exports = { downloadFile };
