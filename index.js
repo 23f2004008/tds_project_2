@@ -16,6 +16,9 @@ app.post('/endpoint', async (req, res) => {
   }
 
   const { email, secret, url } = req.body;
+  console.log("Received secret:", secret);
+  console.log("Expected secret:", APP_SECRET);
+
 
   if (secret !== APP_SECRET) {
     return res.status(403).json({ error: 'Invalid secret' });
