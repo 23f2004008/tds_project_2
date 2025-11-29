@@ -1,23 +1,33 @@
-# Use official Node.js environment
 FROM node:18-slim
 
-# Set working directory
+# Install Chromium dependencies
+RUN apt-get update && apt-get install -y \
+    wget gnupg ca-certificates \
+    libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
+    libexpat1 libfontconfig1 libgcc1 libglib2.0-0 libgobject-2.0-0 \
+    libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 \
+    libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 \
+    libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 \
+    libxss1 libxtst6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Playwright with Chromium
+RUN npm install -g playwright && \
+    playwright install chromium
+
+# Create app directory
 WORKDIR /app
 
-# Copy package files first
-COPY package.json package-lock.json ./
+# Copy app files
+COPY package*.json ./
+RUN npm install
 
-# Install dependencies
-RUN npm install --production
-
-# Copy the rest of your app
 COPY . .
 
-# HuggingFace expects the server to run on PORT env variable
-ENV PORT=7860
-
-# Expose port
+# Expose HuggingFace port
 EXPOSE 7860
 
-# Start your Node server
+# Run server
+ENV PORT=7860
+
 CMD ["node", "index.js"]
