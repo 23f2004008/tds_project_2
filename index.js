@@ -4,8 +4,10 @@ const bodyParser = require('body-parser');
 const { solveQuizRequest } = require('./worker');
 
 const PORT = process.env.PORT || 3000;
-const APP_SECRET = process.env.SECRET;
-const APP_EMAIL = process.env.SERVER_EMAIL;
+
+// READ THE CORRECT RAILWAY VARIABLE NAMES
+const APP_SECRET = process.env.SECRET;          // correct
+const APP_EMAIL = process.env.SERVER_EMAIL;     // correct
 
 console.log("Loaded SECRET:", APP_SECRET);
 console.log("Loaded SERVER_EMAIL:", APP_EMAIL);
@@ -13,12 +15,11 @@ console.log("Loaded SERVER_EMAIL:", APP_EMAIL);
 const app = express();
 app.use(bodyParser.json({ limit: '2mb' }));
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({ status: "running", message: "Use POST to submit quiz." });
-});
-
 app.post('/endpoint', async (req, res) => {
+  if (!req.is('application/json')) {
+    return res.status(400).json({ error: 'Invalid JSON content type' });
+  }
+
   const { email, secret, url } = req.body;
 
   console.log("Received secret:", secret);
@@ -32,11 +33,11 @@ app.post('/endpoint', async (req, res) => {
 
   try {
     console.log("Solving quiz:", url);
-    const result = await solveQuizRequest({ 
-      email, 
-      secret, 
-      url, 
-      serverEmail: APP_EMAIL 
+    const result = await solveQuizRequest({
+      email,
+      secret,
+      url,
+      serverEmail: APP_EMAIL
     });
     console.log("Task finished:", result);
   } catch (err) {
@@ -44,4 +45,10 @@ app.post('/endpoint', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+app.get('/test', (req, res) => {
+  res.send("Service is running");
+});
+
+app.listen(PORT, () => {
+  console.log(`Listening on ${PORT}`);
+});
