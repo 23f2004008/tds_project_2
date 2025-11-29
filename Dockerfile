@@ -1,17 +1,23 @@
-# Playwright base image with Chromium + deps
-FROM mcr.microsoft.com/playwright:v1.40.0-focal
+# Use official Node.js environment
+FROM node:18-slim
 
+# Set working directory
 WORKDIR /app
 
-# Install deps first for cache
-COPY package*.json ./
-RUN npm install --omit=dev
+# Copy package files first
+COPY package.json package-lock.json ./
 
-# Copy rest of project
+# Install dependencies
+RUN npm install --production
+
+# Copy the rest of your app
 COPY . .
 
-# Expose a default port (Koyeb will override)
-EXPOSE 3000
+# HuggingFace expects the server to run on PORT env variable
+ENV PORT=7860
 
-# Start server
+# Expose port
+EXPOSE 7860
+
+# Start your Node server
 CMD ["node", "index.js"]
