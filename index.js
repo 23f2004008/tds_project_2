@@ -3,11 +3,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { solveQuizRequest } = require('./worker');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 7860;
 
-// READ THE CORRECT RAILWAY VARIABLE NAMES
-const APP_SECRET = process.env.SECRET;          // correct
-const APP_EMAIL = process.env.SERVER_EMAIL;     // correct
+// ENV VARIABLES
+const APP_SECRET = process.env.SECRET;
+const APP_EMAIL = process.env.SERVER_EMAIL;
 
 console.log("Loaded SECRET:", APP_SECRET);
 console.log("Loaded SERVER_EMAIL:", APP_EMAIL);
@@ -49,6 +49,7 @@ app.get('/test', (req, res) => {
   res.send("Service is running");
 });
 
-app.listen(PORT, () => {
+// IMPORTANT FOR HUGGINGFACE
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Listening on ${PORT}`);
 });
