@@ -21,13 +21,10 @@ WORKDIR /app
 # Copy app files
 COPY package*.json ./
 RUN npm install
-
 COPY . .
 
-# Expose HuggingFace port
-EXPOSE 7860
-
-# Run server
+# Expose required port
 ENV PORT=7860
+EXPOSE 7860
 
 CMD ["node", "index.js"]
