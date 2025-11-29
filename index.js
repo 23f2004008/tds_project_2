@@ -16,8 +16,9 @@ app.post('/endpoint', async (req, res) => {
   }
 
   const { email, secret, url } = req.body;
-  console.log("Received secret:", secret);
-  console.log("Expected secret:", APP_SECRET);
+  const APP_SECRET = process.env.SECRET;
+  const APP_EMAIL = process.env.SERVER_EMAIL;
+
 
 
   if (secret !== APP_SECRET) {
