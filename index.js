@@ -5,43 +5,54 @@ const { solveQuizRequest } = require('./worker');
 
 const PORT = process.env.PORT || 7860;
 
-// ENV VARIABLES
 const APP_SECRET = process.env.SECRET;
 const APP_EMAIL = process.env.SERVER_EMAIL;
 
-console.log("Loaded SECRET:", APP_SECRET);
-console.log("Loaded SERVER_EMAIL:", APP_EMAIL);
-
 const app = express();
+
+/**
+ * JSON parser
+ */
 app.use(bodyParser.json({ limit: '2mb' }));
 
+/**
+ * ✅ FIX: Handle invalid JSON explicitly
+ */
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'Invalid JSON payload' });
+  }
+  next();
+});
+
 app.post('/endpoint', async (req, res) => {
-  if (!req.is('application/json')) {
-    return res.status(400).json({ error: 'Invalid JSON content type' });
+  // ✅ FIX: safer content-type check
+  if (!req.headers['content-type']?.includes('application/json')) {
+    return res.status(400).json({ error: 'Content-Type must be application/json' });
   }
 
   const { email, secret, url } = req.body;
 
-  console.log("Received secret:", secret);
-  console.log("Expected secret:", APP_SECRET);
-
-  if (secret !== APP_SECRET) {
+  if (!secret || secret !== APP_SECRET) {
     return res.status(403).json({ error: 'Invalid secret' });
   }
 
-  res.status(200).json({ status: 'accepted', message: 'Working on quiz now...' });
+  if (!url) {
+    return res.status(400).json({ error: 'Missing quiz URL' });
+  }
+
+  // Respond immediately (async processing allowed)
+  res.status(200).json({ status: 'accepted' });
 
   try {
-    console.log("Solving quiz:", url);
-    const result = await solveQuizRequest({
+    await solveQuizRequest({
       email,
       secret,
       url,
-      serverEmail: APP_EMAIL
+      serverEmail: APP_EMAIL,
     });
-    console.log("Task finished:", result);
   } catch (err) {
-    console.error("Error solving quiz:", err);
+    console.error("Quiz solving error:", err.message);
   }
 });
 
@@ -49,7 +60,6 @@ app.get('/test', (req, res) => {
   res.send("Service is running");
 });
 
-// IMPORTANT FOR HUGGINGFACE
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Listening on ${PORT}`);
 });
